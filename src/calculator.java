@@ -4,7 +4,7 @@ import java.awt.event.*;
 import java.util.Stack;
 
 
-public class calculator extends JFrame implements ActionListener, MouseListener{
+public class calculator extends JFrame implements ActionListener{
 
     JPanel calcPane;
 
@@ -17,10 +17,10 @@ public class calculator extends JFrame implements ActionListener, MouseListener{
     JButton binButton;
 
     //text fields for where the actual conversions go
-    JLabel hexText;
-    JLabel decText;
-    JLabel octText;
-    JLabel binText;
+    JTextField hexText;
+    JTextField decText;
+    JTextField octText;
+    JTextField binText;
 
     //text fields for where numbers are input
     JTextField inputHistory;
@@ -100,16 +100,16 @@ public class calculator extends JFrame implements ActionListener, MouseListener{
 
         //programming conversions
         hexButton = new JButton("HEX");
-        hexText = new JLabel("0");
+        hexText = new JTextField("0");
 
         decButton = new JButton("DEC");
-        decText = new JLabel("0");
+        decText = new JTextField("0");
 
         octButton = new JButton("OCT");
-        octText = new JLabel("0");
+        octText = new JTextField("0");
 
         binButton = new JButton("BIN");
-        binText = new JLabel("0");
+        binText = new JTextField("0");
 
         //buttons :(
         wordButton = new JButton("QWORD");
@@ -547,8 +547,9 @@ public class calculator extends JFrame implements ActionListener, MouseListener{
         openParaButton.addActionListener(this);
         closeParaButton.addActionListener(this);
         clearButton.addActionListener(this);
-
-
+        modButton.addActionListener(this);
+        ceButton.addActionListener(this);
+        deleteButton.addActionListener(this);
 
     }
 
@@ -645,48 +646,36 @@ public class calculator extends JFrame implements ActionListener, MouseListener{
             expressionString = " ";
             input.setText(expressionString);
         }
+        else if (e.getSource() == modButton) {
+            expressionString +=  " % ";
+            input.setText(expressionString);
+        }
+        else if (e.getSource() == ceButton) {
+
+        }
+        else if (e.getSource() == deleteButton) {
+            if (expressionString.length() != 0) {
+                expressionString = expressionString.substring(0, expressionString.length() - 1);
+                input.setText(expressionString);
+            }
+        }
 
         c.gridx = 5;
         c.gridy = 1;
-        c.weightx = .5;
-        c.weighty = .5;
+        //c.weightx = .1;
+        //c.weighty = .1;
         calcPane.add(input);
 
         c.gridx = 5;
         c.gridy = 0;
-        c.weightx = .5;
-        c.weighty = .5;
+        //c.weightx = .1;
+        //c.weighty = .1;
         inputHistory.setText(expressionString);
         calcPane.add(inputHistory, c);
 
         add(calcPane);
 
         System.out.println(expressionString);
-    }
-
-    @Override
-    public void mouseClicked(MouseEvent e) {
-
-    }
-
-    @Override
-    public void mousePressed(MouseEvent e) {
-
-    }
-
-    @Override
-    public void mouseReleased(MouseEvent e) {
-
-    }
-
-    @Override
-    public void mouseEntered(MouseEvent e) {
-
-    }
-
-    @Override
-    public void mouseExited(MouseEvent e) {
-
     }
 
     public static int evaluateExpression(String expression) {
@@ -706,35 +695,42 @@ public class calculator extends JFrame implements ActionListener, MouseListener{
         for (String token: tokens) {
             if (token.length() == 0) { //blank space
                 continue; //back to for loop
-            } else if (token.charAt(0) == '+' || token.charAt(0) == '-') {
+            }
+            else if (token.charAt(0) == '+' || token.charAt(0) == '-') {
                 // process all +, -, *, / in the top of the operator stack
                 while (!operatorStack.isEmpty() && (operatorStack.peek() == '+' ||
                         operatorStack.peek() == '-' ||
                         operatorStack.peek() == '*' ||
-                        operatorStack.peek() == '/')) {
+                        operatorStack.peek() == '/' ||
+                        operatorStack.peek() == '%')) {
                     processAnOperator(operandStack, operatorStack);
                 }
 
                 operatorStack.push(token.charAt(0));
-            } else if (token.charAt(0) == '*' || token.charAt(0) == '/') {
+            }
+            else if (token.charAt(0) == '*' || token.charAt(0) == '/' || token.charAt(0) == '%') {
                 //process any mult and divide in top of operator stack
                 while (!operatorStack.isEmpty() && (operatorStack.peek() == '*' ||
-                        operatorStack.peek() == '/')) {
+                        operatorStack.peek() == '/' || operatorStack.peek() == '%')) {
                     processAnOperator(operandStack, operatorStack);
                 }
 
                 //push the * or / onto the operator stack
                 operatorStack.push(token.charAt(0));
-            } else if (token.trim().charAt(0) == '(') {
-                operatorStack.push('(');
-            } else if (token.trim().charAt(0) == ')') {
-                //process all operators in stack util seeing )
-                while (operandStack.peek() != '(') {
+            }
+            //deal with parentheses
+            else if (token.trim().charAt(0) == '(') {
+                operatorStack.push('('); //push ( to stack
+            }
+            else if (token.trim().charAt(0) == ')') {
+                //process all operators in stack util seeing (
+                while (operatorStack.peek() != '(') {
                     processAnOperator(operandStack, operatorStack);
                 }
 
-                operatorStack.push(token.charAt(0));
-            } else { //operand scanned
+                operatorStack.pop();
+            }
+            else { //operand scanned
                 //push operand to the stack
                 operandStack.push(new Integer(token));
             }
@@ -766,6 +762,9 @@ public class calculator extends JFrame implements ActionListener, MouseListener{
         else if (op == '/') {
             operandStack.push(op2 / op1);
         }
+        else if (op == '%') {
+            operandStack.push(op2 % op1);
+        }
     }
 
     public static String insertBlanks(String s) {
@@ -774,7 +773,7 @@ public class calculator extends JFrame implements ActionListener, MouseListener{
         for (int i = 0; i < s.length(); i++) {
             if (s.charAt(i) == '(' || s.charAt(i) == ')' ||
                     s.charAt(i) == '+' || s.charAt(i) == '-' ||
-                    s.charAt(i) == '*' || s.charAt(i) == '/') {
+                    s.charAt(i) == '*' || s.charAt(i) == '/' || s.charAt(i) == '%') {
                 result += " " + s.charAt(i) + " ";
             }
             else {

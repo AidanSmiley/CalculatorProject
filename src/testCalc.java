@@ -5,7 +5,7 @@ public class testCalc {
         calculator window = new calculator();
         window.setTitle("Programmer Calculator");
         window.setVisible(true);
-        window.setSize(400, 800);
+        window.setSize(400, 600);
         window.setResizable(false);
         window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
